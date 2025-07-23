@@ -1,0 +1,367 @@
+import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../bloc/auth/auth_bloc.dart';
+import '../bloc/auth/auth_event.dart';
+import '../bloc/auth/auth_state.dart';
+import '../utils/ui_constants.dart';
+
+class LoginPage extends StatefulWidget {
+  const LoginPage({super.key});
+
+  @override
+  State<LoginPage> createState() => _LoginPageState();
+}
+
+class _LoginPageState extends State<LoginPage> {
+  final _formKey = GlobalKey<FormState>();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _passwordController.dispose();
+    super.dispose();
+  }
+
+  void _handleLogin() {
+    if (_formKey.currentState!.validate()) {
+      context.read<AuthBloc>().add(
+            AuthEvent.loginRequested(
+              email: _emailController.text.trim(),
+              password: _passwordController.text,
+            ),
+          );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: UIConstants.backgroundSecondary,
+      body: BlocListener<AuthBloc, AuthState>(
+        listener: (context, state) {
+          // Handle navigation or other side effects here if needed
+        },
+        child: BlocBuilder<AuthBloc, AuthState>(
+          builder: (context, state) {
+            return Stack(
+              children: [
+                // Background image
+                 Positioned.fill(
+                    child: Image.asset(
+                      '/images/bg.avif',
+                      fit: BoxFit.cover,
+                      errorBuilder: (context, error, stackTrace) {
+                        return Container(
+                          color: UIConstants.backgroundSecondary,
+                        );
+                      },
+                    ),
+                  ),
+                // Content
+                Column(
+                  children: [
+                    // Header section with background
+                    Expanded(
+                      child: SizedBox(
+                         width: double.infinity,
+                        child: SafeArea(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(horizontal: UIConstants.spacingMd),
+                            child: _buildHeader(),
+                          ),
+                        ),
+                      ),
+                    ),
+                    // Form container
+                    Container(
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: UIConstants.surface,
+                        borderRadius: BorderRadius.only(
+                          topLeft: Radius.circular(UIConstants.cardRadius * 2),
+                          topRight: Radius.circular(UIConstants.cardRadius * 2),
+                        ),
+                        boxShadow: UIConstants.shadowMd,
+                      ),
+                      child: Padding(
+                        padding: EdgeInsets.all(UIConstants.spacingLg),
+                        child: Form(
+                          key: _formKey,
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // Error display
+                              _buildErrorDisplay(state),
+                              
+                              // Login Form
+                              _buildLoginForm(),
+                              
+                              // Login Button
+                              _buildLoginButton(state),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                // Loading overlay
+                if (state is AuthLoading)
+                  Container(
+                    color: Colors.black26,
+                    child: Center(
+                      child: CircularProgressIndicator(
+                        valueColor: AlwaysStoppedAnimation<Color>(UIConstants.surface),
+                      ),
+                    ),
+                  ),
+              ],
+            );
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHeader() {
+    return Column(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        // Brand logo
+        Container(
+          width: 80,
+          height: 80,
+          margin: EdgeInsets.only(bottom: UIConstants.spacingLg),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(UIConstants.cardRadius),
+            boxShadow: UIConstants.shadowSm,
+          ),
+          child: ClipRRect(
+            borderRadius: BorderRadius.circular(UIConstants.cardRadius),
+            child: Image.asset(
+              'assets/stockmap-icon.png',
+              fit: BoxFit.cover,
+              errorBuilder: (context, error, stackTrace) {
+                return Container(
+                  decoration: BoxDecoration(
+                    color: UIConstants.surface,
+                    borderRadius: BorderRadius.circular(UIConstants.cardRadius),
+                  ),
+                  child: Icon(
+                    Icons.inventory_2,
+                    size: UIConstants.iconLg,
+                    color: UIConstants.primary,
+                  ),
+                );
+              },
+            ),
+          ),
+        ),
+        Text(
+          'Welcome Back',
+          style: UIConstants.headingLarge.copyWith(
+            color: UIConstants.surface,
+          ),
+          textAlign: TextAlign.center,
+        ),
+        SizedBox(height: UIConstants.spacingSm),
+        Text(
+          'Sign in to access your Admin dashboard',
+          style: UIConstants.bodyMedium.copyWith(
+            color: UIConstants.textSecondary,
+          ),
+          textAlign: TextAlign.center,
+        ),
+      ],
+    );
+  }
+
+  Widget _buildErrorDisplay(AuthState state) {
+    String? errorMessage;
+    bool isAccessDenied = false;
+    
+    if (state is AuthError) {
+      errorMessage = state.message;
+    } else if (state is AuthAccessDenied) {
+      errorMessage = state.message;
+      isAccessDenied = true;
+    }
+
+    if (errorMessage == null) return const SizedBox.shrink();
+
+    return Container(
+      margin: EdgeInsets.only(bottom: UIConstants.spacingMd),
+      padding: EdgeInsets.all(UIConstants.spacingMd),
+      decoration: BoxDecoration(
+        color: isAccessDenied ? UIConstants.warning.withValues(alpha: 0.1) : UIConstants.error.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(UIConstants.inputRadius),
+        border: Border.all(
+          color: isAccessDenied ? UIConstants.warning.withValues(alpha: 0.3) : UIConstants.error.withValues(alpha: 0.3),
+        ),
+      ),
+      child: Row(
+        children: [
+          Icon(
+            isAccessDenied ? Icons.block : Icons.error_outline,
+            color: isAccessDenied ? UIConstants.warning : UIConstants.error,
+            size: UIConstants.iconSm,
+          ),
+          SizedBox(width: UIConstants.spacingSm),
+          Expanded(
+            child: SelectableText(
+              errorMessage,
+              style: UIConstants.bodySmall.copyWith(
+                color: isAccessDenied ? UIConstants.warning : UIConstants.error,
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildLoginForm() {
+    return Column(
+      children: [
+        _buildInputField(
+          controller: _emailController,
+          hintText: 'Email',
+          icon: Icons.email_outlined,
+          keyboardType: TextInputType.emailAddress,
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your email';
+            }
+            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+              return 'Please enter a valid email';
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: UIConstants.spacingMd),
+        _buildInputField(
+          controller: _passwordController,
+          hintText: 'Password',
+          icon: Icons.lock_outlined,
+          obscureText: _obscurePassword,
+          suffixIcon: IconButton(
+            icon: Icon(
+              _obscurePassword
+                  ? Icons.visibility_off_outlined
+                  : Icons.visibility_outlined,
+              color: UIConstants.primary,
+            ),
+            onPressed: () {
+              setState(() {
+                _obscurePassword = !_obscurePassword;
+              });
+            },
+          ),
+          validator: (value) {
+            if (value == null || value.isEmpty) {
+              return 'Please enter your password';
+            }
+            if (value.length < 6) {
+              return 'Password must be at least 6 characters';
+            }
+            return null;
+          },
+        ),
+        SizedBox(height: UIConstants.spacingLg),
+      ],
+    );
+  }
+
+  Widget _buildInputField({
+    required TextEditingController controller,
+    required String hintText,
+    required IconData icon,
+    bool obscureText = false,
+    TextInputType? keyboardType,
+    Widget? suffixIcon,
+    String? Function(String?)? validator,
+  }) {
+    return Container(
+      height: UIConstants.buttonHeightLg,
+      decoration: BoxDecoration(
+        color: UIConstants.background,
+        borderRadius: BorderRadius.circular(UIConstants.inputRadius),
+        border: Border.all(
+          color: UIConstants.border,
+          width: 2,
+        ),
+      ),
+      child: TextFormField(
+        controller: controller,
+        obscureText: obscureText,
+        keyboardType: keyboardType,
+        validator: validator,
+        textInputAction: hintText == 'Password' ? TextInputAction.done : TextInputAction.next,
+        onFieldSubmitted: hintText == 'Password' ? (_) => _handleLogin() : null,
+        style: UIConstants.bodyMedium.copyWith(
+          color: UIConstants.textPrimary,
+        ),
+        decoration: InputDecoration(
+          hintText: hintText,
+          hintStyle: UIConstants.bodyMedium.copyWith(
+            color: UIConstants.textSecondary,
+          ),
+          prefixIcon: Icon(
+            icon,
+            color: UIConstants.primary,
+            size: UIConstants.iconSm,
+          ),
+          suffixIcon: suffixIcon,
+          border: InputBorder.none,
+          contentPadding: EdgeInsets.symmetric(
+            horizontal: UIConstants.spacingMd,
+            vertical: UIConstants.spacingMd,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildLoginButton(AuthState state) {
+    final isLoading = state is AuthLoading;
+    
+    return Container(
+      width: double.infinity,
+      height: UIConstants.buttonHeightLg,
+      margin: EdgeInsets.only(bottom: UIConstants.spacingLg),
+      child: ElevatedButton(
+        onPressed: isLoading ? null : _handleLogin,
+        style: UIConstants.getButtonStyle(),
+        child: isLoading
+            ? SizedBox(
+                width: UIConstants.iconSm,
+                height: UIConstants.iconSm,
+                child: CircularProgressIndicator(
+                  strokeWidth: 2,
+                  valueColor: AlwaysStoppedAnimation<Color>(UIConstants.surface),
+                ),
+              )
+            : Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Text(
+                    'Sign In',
+                    style: UIConstants.labelLarge.copyWith(
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  SizedBox(width: UIConstants.spacingSm),
+                  Icon(
+                    Icons.arrow_forward,
+                    size: UIConstants.iconSm,
+                  ),
+                ],
+              ),
+      ),
+    );
+  }
+}

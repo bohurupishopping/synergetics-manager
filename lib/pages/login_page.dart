@@ -4,6 +4,7 @@ import '../cubits/auth_cubit.dart';
 import '../models/auth_state.dart';
 import '../utils/validators.dart';
 import '../utils/app_router.dart';
+import '../utils/ui_constants.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -81,95 +82,107 @@ class _LoginPageState extends State<LoginPage> {
         );
       },
       child: Scaffold(
-        backgroundColor: Colors.grey[50],
-        body: SafeArea(
-          child: Center(
-            child: SingleChildScrollView(
-              padding: const EdgeInsets.all(24),
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 400),
+        body: Container(
+          decoration: const BoxDecoration(
+            gradient: UIConstants.backgroundGradient,
+          ),
+          child: SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(UIConstants.largePadding),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    // Logo and Title
-                    Column(
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: Theme.of(context).colorScheme.primary,
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: const Icon(
-                            Icons.business_center,
-                            size: 40,
-                            color: Colors.white,
-                          ),
-                        ),
-                        const SizedBox(height: 24),
-                        Text(
-                          'Welcome Back',
-                          style: Theme.of(context).textTheme.headlineMedium?.copyWith(
-                            fontWeight: FontWeight.bold,
-                            color: Colors.grey[800],
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Text(
-                          'Sign in to your account',
-                          style: Theme.of(context).textTheme.bodyLarge?.copyWith(
-                            color: Colors.grey[600],
-                          ),
-                        ),
-                      ],
+                    // Logo with modern design
+                    Container(
+                      width: 120,
+                      height: 120,
+                      decoration: BoxDecoration(
+                        gradient: UIConstants.primaryGradient,
+                        borderRadius: BorderRadius.circular(UIConstants.extraLargeRadius),
+                        boxShadow: UIConstants.elevatedShadow,
+                      ),
+                      child: const Icon(
+                        Icons.business_center_rounded,
+                        size: 60,
+                        color: Colors.white,
+                      ),
                     ),
-                    const SizedBox(height: 48),
+                    const SizedBox(height: UIConstants.extraLargeSpacing),
                     
-                    // Login Form
-                    Card(
-                      elevation: 2,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
+                    // Title with modern typography
+                    Text(
+                      'Welcome Back',
+                      style: UIConstants.headingLarge,
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: UIConstants.smallSpacing),
+                    Text(
+                      'Sign in to your account to continue',
+                      style: UIConstants.bodyLarge.copyWith(
+                        color: UIConstants.textSecondaryColor,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                    const SizedBox(height: UIConstants.extraLargeSpacing * 1.5),
+                    
+                    // Modern Login Form Card
+                    Container(
+                      width: double.infinity,
+                      constraints: const BoxConstraints(maxWidth: 400),
+                      decoration: BoxDecoration(
+                        gradient: UIConstants.cardGradient,
+                        borderRadius: BorderRadius.circular(UIConstants.extraLargeRadius),
+                        boxShadow: UIConstants.cardShadow,
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.2),
+                          width: 1,
+                        ),
                       ),
                       child: Padding(
-                        padding: const EdgeInsets.all(24),
+                        padding: const EdgeInsets.all(UIConstants.extraLargePadding),
                         child: Form(
                           key: _formKey,
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.stretch,
                             children: [
-                              // Email Field
+                              // Email Field with modern styling
                               TextFormField(
                                 controller: _emailController,
                                 keyboardType: TextInputType.emailAddress,
                                 textInputAction: TextInputAction.next,
                                 enabled: !_isLoading,
-                                decoration: const InputDecoration(
-                                  labelText: 'Email',
+                                style: UIConstants.bodyLarge,
+                                decoration: UIConstants.inputDecoration(
                                   hintText: 'Enter your email address',
-                                  prefixIcon: Icon(Icons.email_outlined),
+                                  prefixIcon: Icon(
+                                    Icons.email_outlined,
+                                    color: UIConstants.textSecondaryColor,
+                                  ),
                                 ),
                                 validator: Validators.validateEmail,
                               ),
-                              const SizedBox(height: 16),
+                              const SizedBox(height: UIConstants.largeSpacing),
                               
-                              // Password Field
+                              // Password Field with modern styling
                               TextFormField(
                                 controller: _passwordController,
                                 obscureText: _obscurePassword,
                                 textInputAction: TextInputAction.done,
                                 enabled: !_isLoading,
-                                decoration: InputDecoration(
-                                  labelText: 'Password',
+                                style: UIConstants.bodyLarge,
+                                decoration: UIConstants.inputDecoration(
                                   hintText: 'Enter your password',
-                                  prefixIcon: const Icon(Icons.lock_outlined),
+                                  prefixIcon: Icon(
+                                    Icons.lock_outlined,
+                                    color: UIConstants.textSecondaryColor,
+                                  ),
                                   suffixIcon: IconButton(
                                     icon: Icon(
                                       _obscurePassword
                                           ? Icons.visibility_outlined
                                           : Icons.visibility_off_outlined,
+                                      color: UIConstants.textSecondaryColor,
                                     ),
                                     onPressed: () {
                                       setState(() {
@@ -181,51 +194,80 @@ class _LoginPageState extends State<LoginPage> {
                                 validator: Validators.validatePassword,
                                 onFieldSubmitted: (_) => _handleLogin(),
                               ),
-                              const SizedBox(height: 24),
+                              const SizedBox(height: UIConstants.extraLargeSpacing),
                               
-                              // Login Button
-                              ElevatedButton(
-                                onPressed: _isLoading ? null : _handleLogin,
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Theme.of(context).colorScheme.primary,
-                                  foregroundColor: Colors.white,
-                                  padding: const EdgeInsets.symmetric(vertical: 16),
-                                  shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(8),
+                              // Modern Login Button
+                              SizedBox(
+                                height: 56,
+                                child: Container(
+                                  decoration: BoxDecoration(
+                                    gradient: UIConstants.primaryGradient,
+                                    borderRadius: BorderRadius.circular(UIConstants.mediumRadius),
+                                    boxShadow: UIConstants.buttonShadow,
+                                  ),
+                                  child: ElevatedButton(
+                                    onPressed: _isLoading ? null : _handleLogin,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.transparent,
+                                      shadowColor: Colors.transparent,
+                                      elevation: 0,
+                                      shape: RoundedRectangleBorder(
+                                        borderRadius: BorderRadius.circular(UIConstants.mediumRadius),
+                                      ),
+                                    ),
+                                    child: _isLoading
+                                        ? const SizedBox(
+                                            width: 24,
+                                            height: 24,
+                                            child: CircularProgressIndicator(
+                                              strokeWidth: 2.5,
+                                              valueColor: AlwaysStoppedAnimation<Color>(
+                                                Colors.white,
+                                              ),
+                                            ),
+                                          )
+                                        : Text(
+                                            'Sign In',
+                                            style: UIConstants.buttonText,
+                                          ),
                                   ),
                                 ),
-                                child: _isLoading
-                                    ? const SizedBox(
-                                        height: 20,
-                                        width: 20,
-                                        child: CircularProgressIndicator(
-                                          strokeWidth: 2,
-                                          valueColor: AlwaysStoppedAnimation<Color>(
-                                            Colors.white,
-                                          ),
-                                        ),
-                                      )
-                                    : const Text(
-                                        'Sign In',
-                                        style: TextStyle(
-                                          fontSize: 16,
-                                          fontWeight: FontWeight.w600,
-                                        ),
-                                      ),
                               ),
                             ],
                           ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 24),
+                    const SizedBox(height: UIConstants.extraLargeSpacing),
                     
-                    // Help Text
-                    Text(
-                      'Contact your administrator if you need access to the system.',
-                      textAlign: TextAlign.center,
-                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Colors.grey[600],
+                    // Help Text with modern styling
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: UIConstants.mediumPadding,
+                        vertical: UIConstants.smallPadding,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.8),
+                        borderRadius: BorderRadius.circular(UIConstants.largeRadius),
+                        border: Border.all(
+                          color: Colors.white.withValues(alpha: 0.3),
+                          width: 1,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            Icons.help_outline_rounded,
+                            size: 16,
+                            color: UIConstants.textSecondaryColor,
+                          ),
+                          const SizedBox(width: UIConstants.smallSpacing),
+                          Text(
+                            'Need help? Contact your administrator',
+                            style: UIConstants.bodySmall,
+                          ),
+                        ],
                       ),
                     ),
                   ],

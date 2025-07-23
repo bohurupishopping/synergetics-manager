@@ -36,7 +36,6 @@ class AppTheme {
         primaryContainer: primaryLightColor,
         secondary: accentColor,
         error: errorColor,
-        background: backgroundColor,
         surface: surfaceColor,
         onPrimary: Colors.white,
         onSecondary: Colors.white,
